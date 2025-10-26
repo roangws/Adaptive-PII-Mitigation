@@ -1,83 +1,86 @@
-# Bayhaus Privacy Guardrail — Repro Pack (Aparavi)
+# Bayhaus Privacy Guardrail — Repro (Aparavi DTC)
 
-Minimal, no-code reproducibility for our case study: **clone → import JSON → point to PDFs → run → export results**.
+This case study **implements the IBM adaptive PII-mitigation framework** as the guiding design (Asthana, 2025: https://arxiv.org/abs/2501.12465).  
+Goal: **no-code replication** — import one JSON, point to your `PDFs/` folder, run, and chat safely.
 
-## What’s here
-- `data/pdfs/` — the **50 PDFs** (de-identified/synthetic).
-- `configs/aparavi_pipeline.json` — the **exact pipeline** used.
-- `configs/policies_us.json` — the **policy/rule config** used.
-- `results/metrics.csv` — exported **metrics** from our run.
-- `version.txt` — Aparavi version/build + date.
-- `docs/Runbook.md` (optional) — screenshots; or see **Video** below.
+## Links
+- Aparavi DTC: https://dtc.aparavi.com/
+- Qdrant (vector DB): https://qdrant.tech/
+- Google AI Studio (Gemini API key): https://aistudio.google.com/
+- Pipeline JSON: PUT_YOUR_JSON_URL_HERE
 
-**Video walkthrough:** <ADD_UNLISTED_LINK_HERE>
+## Repo layout
+/ (repo root)
+├─ PDFs/                 # 50 de-identified sample PDFs
+└─ README.md
+└─ pipeline.json
 
----
-
-## Prerequisites
-- **Aparavi Data Toolchain for AI** account/workspace.
-- Permission to import a pipeline and run jobs.
-- (If your pipeline targets a vector store) **Qdrant** connector/credentials.
-
----
-
-## Quick Start (5–7 minutes)
-
-1. **Clone or download** this repo.  
-   Keep the folder layout as-is.
-
-2. **Open Aparavi** → **Import** `configs/aparavi_pipeline.json`.
-
-3. **Set source** on the first node to this repo’s `data/pdfs/` folder.
-
-4. **Load policies**: point the policy node to `configs/policies_us.json`.
-
-5. **Masking character & roles**:  
-   - Set redaction char to **U+2588 (█)** (or `*`, but be consistent).  
-   - Ensure roles: **Standard** (masked), **Admin** (full view, audited).
-
-6. **Vector store** (if present in your pipeline):  
-   - Confirm **Qdrant** collection/URL/API key in the connector node.
-
-7. **Run the pipeline** → after completion, **export**:  
-   - Masked outputs, logs, and **metrics** (save to `results/`).
+**Unit of evaluation:** document (PDF)  
+**Mask character:** U+2588 `█` (keep consistent in outputs and figures)
 
 ---
 
-## What to report / verify
+## Step-by-step (about 5–7 minutes)
 
-**Unit of evaluation:** **document (PDF)**.  
-**Definitions:**  
-- **Leak** = any PII token visible in the **final chatbot answer**.  
-- **Over-mask** = **non-PII** text masked.  
+1) **Open Aparavi DTC** → *Pipelines* → **Import** → select the pipeline JSON (URL above).
 
-Check your run against `results/metrics.csv` (or regenerate it):
-- **Leaks:** expect `0 / 50` documents.
-- **Over-masking:** e.g., `3 / 50` docs (~6%) *(update with your number)*.
-- (If computed) **Precision/Recall/F1** on annotated spans.
+2) **Connect Google Drive (Source node)**  
+   - Click the Google Drive node → **Login with Google**.  
+   - Set folder path to your Drive location containing the same `PDFs/` (e.g., `My Drive/chatbot/*`).  
+   - **Save**.
 
-> If your journal requires it, include screenshots or the exported CSV as supplementary material.
+3) **Parse to text (Parser node)**  
+   - No change needed; this converts PDFs to text.
+
+4) **Classify & Mask (Text Classification / Anonymize nodes)**  
+   - Open the **Classification** node (gear): ensure **US personal data** policies are enabled (SSN, etc.).  
+   - Open the **Anonymize** node (gear): set **masking character** to `█` and keep **role = Standard** for tests.  
+   - Confirm that detected PII (e.g., SSN) is replaced by `█` blocks.
+
+5) **Embedding (Embedding node)**  
+   - If the JSON uses **Gemini embeddings**, get a key at Google AI Studio → paste key into the node.  
+   - Keep chunk size/overlap as provided.
+
+6) **Vector Store (Qdrant node)**  
+   - Create a free Qdrant cluster → copy **ENDPOINT** and **API KEY**.  
+   - In the Qdrant node, set **URL**, **API KEY**, and **Collection** (e.g., `chat_redacted_pii`).  
+   - **Save**.
+
+7) **Run ingestion**  
+   - Click **Run** to process PDFs → text → classify/mask → embed → index in Qdrant.  
+   - Check logs; ensure completion without errors.
+
+8) **Chat**  
+   - Open the Chat/HTTP Result node and click **Play**.  
+   - Example safe prompt:  
+     - *“What is the client name for ByteBay Studios?”*  
+   - Expect a normal answer for non-PII (e.g., a client name present in the docs).  
+   - PII (e.g., SSN) must remain **masked** (`███████████`) in any response.
 
 ---
 
-## Recreate our exact environment
-- See `version.txt` for Aparavi build/date and any model IDs used.
-- If your environment differs, note it in your submission.
+## What to verify
+
+- **Leaks:** **0/50** documents show PII in final chatbot answers.  
+- **Over-masking:** Count documents where non-PII was masked (e.g., `3/50`).  
+- **Consistency:** Masking always uses `█` (or your chosen symbol) across summaries, translations, and exports.  
+- **Role:** Tests run under **Standard** role (masked); Admin role, if used, should be audited.
+
+**Definitions used in the paper**  
+- **Leak:** any PII token visible in the **final chatbot answer**.  
+- **Over-mask:** non-PII text that was masked.
 
 ---
 
 ## Troubleshooting
-- **Nothing gets masked:** ensure `policies_us.json` is attached to the policy/anonymize node and the **role** is set to *Standard* for the test.  
-- **Vector errors:** verify Qdrant credentials/URL and collection name in the connector node.  
-- **Mask symbol mismatch:** set the masking character to **█** (or update the paper figures to match your chosen character).
+
+- **Nothing is masked:** ensure policies are enabled and test role = **Standard**.  
+- **Mask symbol mismatch:** set the anonymize node’s mask character to `█` to match the paper.  
+- **Qdrant errors:** verify URL/API key/collection; cluster must be reachable.  
+- **Embedding errors:** confirm the Gemini API key and model settings.
 
 ---
 
-## Ethics & Data
-- PDFs are **de-identified/synthetic**; no real PII.  
-- If you run a human trust survey, include consent text and IRB/ethics note in your paper.
-
----
-
-## Cite
-Please cite the case study and the IBM adaptive framework that conceptually guides this implementation.
+## Notes
+- PDFs here are **synthetic/de-identified**.  
+- This implementation follows the **IBM adaptive framework** (Asthana, 2025) for policy engine → contextual detection → adaptive remediation, realized end-to-end inside **Aparavi DTC** with **Qdrant** and **Gemini**.
