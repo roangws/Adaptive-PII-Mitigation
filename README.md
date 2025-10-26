@@ -1,32 +1,35 @@
 # Bayhaus Privacy Guardrail — Repro (Aparavi DTC)
 
 This case study **implements the IBM adaptive PII-mitigation framework** as the guiding design (Asthana, 2025: https://arxiv.org/abs/2501.12465).  
-Goal: **no-code replication** — import one JSON, point to your `PDFs/` folder, run, and chat safely.
+Goal: **no-code replication** — import one JSON, point to your `PDF/` folder, run, and chat safely.
 
 ## Links
 - Aparavi DTC: https://dtc.aparavi.com/
 - Qdrant (vector DB): https://qdrant.tech/
 - Google AI Studio (Gemini API key): https://aistudio.google.com/
-- Pipeline JSON: PUT_YOUR_JSON_URL_HERE
+- Pipeline JSON: pipeline.json
 
 ## Repo layout
 / (repo root)
-├─ PDFs/                 # 50 de-identified sample PDFs
+
+├─ PDF/                 # 50 de-identified sample PDFs
+
 └─ README.md
+
 └─ pipeline.json
 
 **Unit of evaluation:** document (PDF)  
-**Mask character:** U+2588 `█` (keep consistent in outputs and figures)
+**Mask character:** U+2588 `█` 
 
 ---
 
 ## Step-by-step (about 5–7 minutes)
 
-1) **Open Aparavi DTC** → *Pipelines* → **Import** → select the pipeline JSON (URL above).
+1) **Open Aparavi Data Toolchain** → *Pipelines* → **Import** → select the pipeline JSON (URL above).
 
 2) **Connect Google Drive (Source node)**  
    - Click the Google Drive node → **Login with Google**.  
-   - Set folder path to your Drive location containing the same `PDFs/` (e.g., `My Drive/chatbot/*`).  
+   - Set folder path to your Drive location containing the same `PDFs/` (e.g., `myemail@gmail.com/My Drive/chatbot/*`).  
    - **Save**.
 
 3) **Parse to text (Parser node)**  
@@ -83,4 +86,4 @@ Goal: **no-code replication** — import one JSON, point to your `PDFs/` folder,
 
 ## Notes
 - PDFs here are **synthetic/de-identified**.  
-- This implementation follows the **IBM adaptive framework** (Asthana, 2025) for policy engine → contextual detection → adaptive remediation, realized end-to-end inside **Aparavi DTC** with **Qdrant** and **Gemini**.
+- This implementation follows the **IBM adaptive framework** (Asthana, 2025) for policy engine → contextual detection → adaptive remediation, realized end-to-end inside **Aparavi Data Toolchain** with **Qdrant** and **Gemini**.
