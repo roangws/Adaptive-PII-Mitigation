@@ -1,7 +1,9 @@
-# Bayhaus Privacy Guardrail — Repro (Aparavi DTC)
+# How to Build an AI Chatbot with Google Drive | Automatic PII Data Masking
 
 This case study **implements the IBM adaptive PII-mitigation framework** as the guiding design (Asthana, 2025: https://arxiv.org/abs/2501.12465).  
 Goal: **no-code replication** — import one JSON, point to your `PDF/` folder, run, and chat safely.
+
+[![Watch the video](https://img.youtube.com/vi/VS9cG33o3Bw/hqdefault.jpg)](https://www.youtube.com/watch?v=VS9cG33o3Bw)
 
 ## Links
 - Aparavi DTC: https://dtc.aparavi.com/
